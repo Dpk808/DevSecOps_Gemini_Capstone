@@ -1,0 +1,41 @@
+name: AI DevSecOps Auto Remediation
+
+on:
+  push:
+  workflow_dispatch:
+    inputs:
+      apply_fixes:
+        description: "Apply AI-generated fixes automatically?"
+        required: true
+        default: "false"
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+
+    env:
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      APPLY_FIXES: ${{ github.event.inputs.apply_fixes }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install bandit pip-audit google-generativeai
+
+      - name: Run AI Security Scanner
+        run: |
+          python scanner/main.py
+
+      - name: Upload Security Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-report
+          path: reports/
