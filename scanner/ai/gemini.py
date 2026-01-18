@@ -1,9 +1,13 @@
 import os
-from google.genai import client
+from google.genai import TextGenerationModel, TextGenerationRequest
 
-# Load Gemini API key from env
+# Option 1: Set environment variable directly
+# Make sure GEMINI_API_KEY is set in env (CI or local)
 API_KEY = os.getenv("GEMINI_API_KEY")
-client.configure(api_key=API_KEY)
+os.environ["GENAI_API_KEY"] = API_KEY
+
+# Create model object
+model = TextGenerationModel.from_pretrained("gemini-1.5")
 
 def generate_fix(finding):
     prompt = f"""
@@ -24,14 +28,14 @@ Return the response in JSON format:
 }}
 """
 
-    response = client.generate_text(
-        model="gemini-1.5",
-        prompt=prompt
+    # Generate AI response
+    response = model.predict(
+        TextGenerationRequest(prompt=prompt)
     )
 
     return {
         "tool": finding["tool"],
         "file": finding.get("file"),
-        "ai_response": response.text,
-        "patched_code": response.text if finding["tool"] == "bandit" else None
+        "ai_response": response.candidates[0].content,
+        "patched_code": response.candidates[0].content if finding["tool"] == "bandit" else None
     }

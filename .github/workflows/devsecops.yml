@@ -13,8 +13,11 @@ jobs:
   security:
     runs-on: ubuntu-latest
 
+    # CI Environment Variables
     env:
+      # GEMINI_API_KEY is provided by GitHub Secrets in CI
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      # Whether to auto-apply AI fixes
       APPLY_FIXES: ${{ github.event.inputs.apply_fixes }}
 
     steps:
